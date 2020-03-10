@@ -1,8 +1,9 @@
 FROM php:7.4.0-apache-buster
 
-ARG COMPOSER_VERSION=1.9.1
-
 WORKDIR /app
+
+ENV ENVIRONMENT=production DEBUG=0 APACHE_NO_ACCESS_LOG=true
+ARG COMPOSER_VERSION=1.9.1
 
 RUN mkdir -p vendor && mkdir -p var && touch .env
 
