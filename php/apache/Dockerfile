@@ -1,18 +1,43 @@
-FROM php:7.4.0-apache-buster
+FROM php:7.4.3-apache-buster
 
 WORKDIR /app
 
 ENV ENVIRONMENT=production DEBUG=0 APACHE_NO_ACCESS_LOG=true
-ARG COMPOSER_VERSION=1.9.1
 
-RUN mkdir -p vendor && mkdir -p var && touch .env
+RUN mkdir -p vendor && \
+    mkdir -p var && \
+    touch .env
 
-RUN a2enmod rewrite && apt-get update && apt-get install -y bash git apt-utils libzip-dev make zip unzip wget curl
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        bash \
+        git \
+        netcat \
+        apt-utils \
+        make \
+        zip \
+        unzip \
+        wget \
+        curl \
+        zlib1g-dev \
+        libxml2-dev \
+        libzip-dev \
+        librabbitmq-dev \
+    && docker-php-ext-install \
+        pdo_mysql \
+        zip \
+        opcache \
+    && pecl install \
+        amqp \
+    && docker-php-ext-enable \
+        zip \
+        amqp
 
-RUN adduser www-data www-data && usermod -u 1000 www-data && chown -R www-data:www-data /app
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer && \
+    composer global require hirak/prestissimo
 
-RUN docker-php-ext-configure zip && docker-php-ext-install opcache zip pdo_mysql
-
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer --version=${COMPOSER_VERSION} && composer global require hirak/prestissimo
+RUN a2enmod rewrite && \
+    adduser www-data www-data && \
+    usermod -u 1000 www-data && \
+    chown -R www-data:www-data /app
 
 CMD apache2-foreground
