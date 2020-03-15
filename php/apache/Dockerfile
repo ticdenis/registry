@@ -1,12 +1,8 @@
 FROM php:7.4.3-apache-buster
 
-WORKDIR /app
+WORKDIR /opt/app
 
 ENV ENVIRONMENT=production DEBUG=0 APACHE_NO_ACCESS_LOG=true
-
-RUN mkdir -p vendor && \
-    mkdir -p var && \
-    touch .env
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bash \
@@ -38,6 +34,6 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin -
 RUN a2enmod rewrite && \
     adduser www-data www-data && \
     usermod -u 1000 www-data && \
-    chown -R www-data:www-data /app
+    chown -R www-data:www-data /opt/app
 
 CMD apache2-foreground
